@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 // get all users
 const getAllUsers = async (req, res) => {
@@ -28,11 +29,15 @@ const getUserById = async (req, res) => {
 
 // create a new user
 const createUser = async (req, res) => {
-  const { email, password } = req.body;
-  const newUser = new User({ email, password });
-
+  const { email, password, role } = req.body;
+  
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({ email, password: hashedPassword, role });
+    
     const savedUser = await newUser.save();
+    
     res.status(201).send(savedUser);
   } catch (error) {
     res.status(400).send({ message: error.message });

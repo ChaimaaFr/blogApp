@@ -57,25 +57,71 @@ const updatePost = async (req, res) => {
   }
 };
 
+
+//updatepostId
+
+const updatePostId = async (req, res) => {
+  const { id } = req.params;
+  const { title, content } = req.body;
+
+  try {
+    const post = await Post.findById(id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (req.userRole === "admin" || post.userId.toString() === req.userId) {
+
+      post.title = title;
+      post.content = content;
+      await post.save();
+      return res.status(200).json({ message: "Post updated successfully", post });
+    }
+        else
+        {
+          return res.status(403).json({ message: "You are not authorized to update this post" });
+        }
+
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 // delete postById
 const deletePost = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedPost = await Post.findByIdAndDelete(id);
-    if (!deletedPost) {
-      res.status(404).send('Post not found');
+    // Récupérer le post à supprimer
+    const post = await Post.findById(id);
+
+    if (!post) {
+      return res.status(404).send('Post not found');
+    }
+
+    if (req.userRole === "admin" || post.userId.toString() === req.userId) {
+      const deletedPost = await Post.findByIdAndDelete(id);
+      if (!deletedPost) {
+        res.status(404).send('Post not found');
+      } else {
+        res.status(200).send('Post deleted successfully');
+      }
     } else {
-      res.status(200).send('Post deleted successfully');
+      return res.status(403).json({ message: "You are not authorized to delete this post" });
     }
   } catch (error) {
     res.status(500).send(error.message);
   }
 };
 
+
 module.exports = {
   getAllPosts,
   getPostById,
   createPost,
   updatePost,
+  updatePostId,
   deletePost,
 };

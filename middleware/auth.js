@@ -11,6 +11,8 @@ const auth = (req, res, next) => {
                 return res.status(401).json({ message: "Failed to authenticate token" });
             }
             req.userId = decoded.userId;
+            req.userRole = decoded.role; 
+
             next();
         });
     } 
@@ -18,5 +20,6 @@ const auth = (req, res, next) => {
         return res.status(401).json({ message: "Invalid token" });
     }
 };
+
 
 module.exports = auth;
